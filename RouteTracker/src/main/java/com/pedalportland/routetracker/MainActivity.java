@@ -5,7 +5,10 @@ import com.pedalportland.routetracker.util.SystemUiHider;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -15,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -62,7 +66,7 @@ public class MainActivity extends Activity {
     private boolean tracking;                                           // whether app is currently tracking
     private PowerManager.WakeLock wakeLock; // used to prevent device sleep
     private boolean gpsFix; // whether we have a GPS fix for accurate data
-    private RouteCalculator routeCalculator = new RouteCalculator();
+    private RouteCalculator routeCalculator;
     private static final String MODULE_TAG = "MainActivity";
 
 
@@ -95,6 +99,23 @@ public class MainActivity extends Activity {
 
         // register listener for trackingToggleButton
         trackingToggleButton.setOnCheckedChangeListener(trackingToggleButtonListener);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+                .setContentTitle("PedalPortland")
+                .setContentText("Actively Collecting Location Data");
+
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this,0,resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        int mNotificationId = 001;
+
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        routeCalculator = new RouteCalculator();
     }
 
     // listener for trackingToggleButton's events
