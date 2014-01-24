@@ -109,13 +109,9 @@ public class MainActivity extends Activity {
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this,0,resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mBuilder.setContentIntent(resultPendingIntent);
-
-        int mNotificationId = 001;
-
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
-        routeCalculator = new RouteCalculator();
+        routeCalculator = new RouteCalculator(mBuilder, mNotifyMgr);
     }
 
     // listener for trackingToggleButton's events
