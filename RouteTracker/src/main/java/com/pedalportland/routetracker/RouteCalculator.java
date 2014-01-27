@@ -64,7 +64,6 @@ public class RouteCalculator {
      */
     public void start() {
         this.reset();
-        mNotificationId++;
         notificationManager.notify(mNotificationId, mBuilder.build());
         tracking = true;
         startTime = System.currentTimeMillis(); // get current time
