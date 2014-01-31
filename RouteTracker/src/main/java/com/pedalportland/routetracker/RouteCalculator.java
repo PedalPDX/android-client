@@ -1,6 +1,9 @@
 package com.pedalportland.routetracker;
 
+import android.app.NotificationManager;
 import android.location.Location;
+import android.support.v4.app.NotificationCompat;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -25,11 +28,17 @@ public class RouteCalculator {
     private double speedKM;
     private double distanceMI;
     private double speedMI;
+    private NotificationCompat.Builder mBuilder;
+    private NotificationManager notificationManager;
+    private int mNotificationId;
 
     /**
      * Instantiates an instance of a <code>RouteCalculator</code>
      */
-    public RouteCalculator() {
+    public RouteCalculator(NotificationCompat.Builder mBuilder, NotificationManager notificationManager) {
+        this.mNotificationId = 0;
+        this.notificationManager = notificationManager;
+        this.mBuilder = mBuilder;
         route = new ArrayList<Location>();
         this.reset();
     }
@@ -55,6 +64,7 @@ public class RouteCalculator {
      */
     public void start() {
         this.reset();
+        notificationManager.notify(mNotificationId, mBuilder.build());
         tracking = true;
         startTime = System.currentTimeMillis(); // get current time
     }
@@ -64,6 +74,7 @@ public class RouteCalculator {
      */
     public void stop() {
 
+        notificationManager.cancel(mNotificationId);
         assert(tracking);
 
         // compute the total time we were tracking
