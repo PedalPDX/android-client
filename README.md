@@ -14,4 +14,4 @@ Pedal PDX is currently being built and is under MIT licensing which means any on
 Pedal PDX is currently under development. Scheduled launch date is March, 2014. Stay Tuned !.   
 
 
-LAST EDITED: 9:34 AM Thursday, January 23, 2014 (PST)
+LAST EDITED: 5:31 PM Wednesday, February 5, 2014 (PST)
