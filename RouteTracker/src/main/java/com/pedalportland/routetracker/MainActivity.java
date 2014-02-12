@@ -1,7 +1,6 @@
 package com.pedalportland.routetracker;
 
 import com.pedalportland.routetracker.util.SystemUiHider;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -22,6 +21,14 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.util.Log;
+import android.view.Menu;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -29,7 +36,31 @@ import android.util.Log;
  *
  * @see SystemUiHider
  */
+
+// Google Maps - BM
+
+
+
 public class MainActivity extends Activity {
+
+    // Declaring the latitude and longitude
+    static final LatLng PORTLANDSU = new LatLng(45.512, 122.685);
+    static final LatLng PORTLANDSQ = new LatLng(45.519, 122.679);
+    private GoogleMap map;
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }
+
+
+
+// ends
+
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -68,6 +99,31 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+            map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+                    .getMap();
+            Marker PortlandSU = map.addMarker(new MarkerOptions().position(PORTLANDSU)
+                    .title("Portland State University,OR"));
+            Marker PioneerSQ = map.addMarker(new MarkerOptions()
+                    .position(PORTLANDSQ)
+                    .title("PioneerSQ")
+                    .snippet("Heart of portland")
+                    .icon(BitmapDescriptorFactory
+                            .fromResource(R.drawable.ic_launcher)));
+
+            // Move the camera instantly to PORTLANDSQ with a zoom of 15.
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(PORTLANDSQ, 15));
+
+            // Zoom in, animating the camera.
+            map.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
+
+
+
+
+
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
