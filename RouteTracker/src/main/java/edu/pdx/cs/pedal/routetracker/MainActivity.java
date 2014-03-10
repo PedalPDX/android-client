@@ -3,10 +3,14 @@ package edu.pdx.cs.pedal.routetracker;
 import android.app.*;
 import edu.pdx.cs.pedal.routetracker.util.SystemUiHider;
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -356,7 +360,12 @@ public class MainActivity extends Activity {
                     if (isChecked) {
                         try {
                             // Start the route tracking
-                            routeTracker.startTracking();
+                            LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
+                            if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                                Intent GPS = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(GPS);
+                            routeTracker.startTracking();}
+                            else{routeTracker.startTracking();}
                         }
                         catch(RouteTrackerException ex) {
                             ErrorDialog(R.string.rt_error_start);
