@@ -364,8 +364,8 @@ public class MainActivity extends Activity {
                             if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
                                 Intent GPS = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                                 startActivity(GPS);
-                            routeTracker.startTracking();}
-                            else{routeTracker.startTracking();}
+                            }
+                            routeTracker.startTracking();
                         }
                         catch(RouteTrackerException ex) {
                             ErrorDialog(R.string.rt_error_start);
