@@ -1,10 +1,8 @@
-package com.pedalportland.routetracker;
+package edu.pdx.cs.pedal.routetracker;
 
-import com.pedalportland.routetracker.util.SystemUiHider;
-
+import android.app.*;
+import edu.pdx.cs.pedal.routetracker.util.SystemUiHider;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.LocationManager;
@@ -56,6 +54,11 @@ public class MainActivity extends Activity {
     private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
 
     /**
+     * Flag for identification of notification object
+     */
+    protected static final int NOTIFICATION_CODE = 1;
+
+    /**
      * The instance of the {@link SystemUiHider} for this activity.
      */
     private SystemUiHider mSystemUiHider;
@@ -64,7 +67,7 @@ public class MainActivity extends Activity {
 
     private MyApplication myApp = null;
     private RouteTracker routeTracker = null;
-    private DataUploader dataUploader = null;
+    private DataLayer dataLayer = null;
 
     /**
      * Called when the activity is first created.
@@ -103,8 +106,8 @@ public class MainActivity extends Activity {
                 trackingToggleButton.setChecked(routeTracker.isTracking());
             }
 
-            // Initialize reference to DataUploader
-            dataUploader = myApp.getDataUploader();
+            // Initialize reference to DataLayer
+            dataLayer = myApp.getDataLayer();
         }
 
         // register listener for trackingToggleButton
@@ -163,6 +166,9 @@ public class MainActivity extends Activity {
     public void onStart() {
         try {
             super.onStart(); // call super's onStart method
+
+            if (null != dataLayer)
+                dataLayer.startRideUpload();
         }
         catch (Exception ex){
             Log.e(MODULE_TAG, ex.getMessage());
@@ -383,8 +389,8 @@ public class MainActivity extends Activity {
                                 showResult(route);
 
                                 // Upload the route data
-                                if (null != dataUploader) {
-                                    dataUploader.UploadData(route.getRoute());
+                                if (null != dataLayer) {
+                                    dataLayer.putRide(route);
                                 }
                             }
                         }
