@@ -124,12 +124,10 @@ public class MainActivity extends Activity {
         mChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             public void onChronometerTick(Chronometer times) {
                 long timeElapsed = SystemClock.elapsedRealtime() - times.getBase();
-                //long to=(1000*60*60*6)-t;
 
                 int hours = (int) (timeElapsed / 3600000);
                 int minutes = (int) (timeElapsed - hours * 3600000) / 60000;
                 int seconds = (int) (timeElapsed - hours * 3600000 - minutes * 60000) / 1000;
-               // int millis = (int) timeElapsed % 9;
 
                 times.setText("TIME "+hours+":"+minutes+":"+seconds);
 
@@ -140,13 +138,6 @@ public class MainActivity extends Activity {
 
         button = (Button) findViewById(R.id.trackingToggleButton);
 
-         // button.setOnClickListener(mStartListener);
-
-        //button = (Button) findViewById(R.id.stop);
-        // button.setOnClickListener(mStopListener);
-
-        // button = (Button) findViewById(R.id.reset);
-        // button.setOnClickListener(mResetListener);
     }
 
     // listener for trackingToggleButton's events
