@@ -18,14 +18,15 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * Created by Minh Vu on 2/27/14.
+ * Created by Minh Vu on 3/10/14.
  */
 public class Maps extends Activity {
     GoogleMap map;
     MyApplication myApp;
-    private RouteCalculator routetrip;
-    private List<LatLng> trip = new ArrayList<LatLng>();
+    private RouteCalculator routeTrip = new RouteCalculator();
+    private List<LatLng> trip;
     LatLngBounds.Builder builder = new LatLngBounds.Builder();
     String rideId;
 
@@ -36,9 +37,12 @@ public class Maps extends Activity {
         Intent intent = getIntent();
 
         rideId = intent.getStringExtra("rideId");
-        if (null != (myApp = MyApplication.getInstance()))
-            routetrip = MyApplication.getInstance().getDataLayer().getRide(rideId);
-        setTrip(routetrip.getRoute());
+        if (rideId != null && null != (myApp = MyApplication.getInstance())) {
+            routeTrip = MyApplication.getInstance().getDataLayer().getRide(rideId);
+            setTrip(routeTrip.getRoute());
+        } else {
+            trip = routeTrip.getTrip_unclipped();
+        }
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
 
         if (getTrip().size() == 0) {
