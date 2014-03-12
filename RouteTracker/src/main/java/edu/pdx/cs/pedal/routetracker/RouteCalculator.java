@@ -1,11 +1,11 @@
 package edu.pdx.cs.pedal.routetracker;
 
 import android.location.Location;
-import com.google.android.gms.maps.model.LatLng;
 import android.util.Log;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import com.google.android.gms.maps.model.LatLng;
 import java.util.List;
 import java.util.ArrayList;
 import org.joda.time.DateTime;
@@ -31,26 +31,29 @@ public class RouteCalculator {
     private static final String JSON_FIELD_LONGITUDE = "longitude";
     private static final String JSON_FIELD_ACCURACY = "accuracy";
 
-    private boolean isTracking;     // Whether app is currently tracking
-    private long startTime;         // Time (in milliseconds) when tracking starts
-    private long rideTime;         // Time (in milliseconds) when tracking starts
-    private long distanceTraveled;  // Distance traveled by user in meters
+    private boolean isTracking; // Whether app is currently tracking
+    private long startTime; // Time (in milliseconds) when tracking starts
+    private long rideTime; // Time (in milliseconds) when tracking starts
+    private long distanceTraveled; // Distance traveled by user in meters
 
     // Constants used in calculating total route distance and average speed
     private static final double MILLISECONDS_PER_HOUR = 1000 * 60 * 60;
     private static final double MILES_PER_KILOMETER = 0.621371192;
 
-    private List<Location> route = null;    // List of locations determining route
-    private Location previousLocation;      // previous reported location
+    private List<Location> route = null; // List of locations determining route
+    private Location previousLocation; // previous reported location
 
-    private double distanceKM;  // Total distance in kilometers
-    private double speedKM;     // Average speed in kilometers/Hour
-    private double distanceMI;  // Total distance in miles
-    private double speedMI;     // Average speed in miles/Hour
-    private static double startpoint; // start point for clipping
-    private static double endpoint;   // end point for clipping
-    private double maxSpeedMPH;  // Maximum speed in miles/Hour
+    private double distanceKM; // Total distance in kilometers
+    private double speedKM; // Average speed in kilometers/Hour
+    private double distanceMI; // Total distance in miles
+    private double speedMI; // Average speed in miles/Hour
+    private double maxSpeedMPH; // Maximum speed in miles/Hour
+    private static double start_point; // get start point
+    private static double end_point; // get end point
+    // get list point for original route
     private static ArrayList<LatLng> trip = new ArrayList<LatLng>();
+    // get list point for clipping route
+    private static ArrayList<LatLng> trip_unclipped = new ArrayList<LatLng>();
 
     /**
      * Instantiates an instance of a <code>RouteCalculator</code>
@@ -291,7 +294,7 @@ public class RouteCalculator {
      */
     private double calcSpeedMPH(double d, double t0, double t1) {
 
-        double cf = 2236.936292;   // (1 mi/1609.344 meters) * (3,600,000 ms/hr) = (mi*ms)/(meters*hr)
+        double cf = 2236.936292; // (1 mi/1609.344 meters) * (3,600,000 ms/hr) = (mi*ms)/(meters*hr)
         return (t1 == t0) ? 0 : (d * 2236.936292) / (t1 - t0);
     }
 
@@ -308,7 +311,7 @@ public class RouteCalculator {
     /**
      * Returns the route travelled.
      */
-    public List getRoute() {
+    public List<Location> getRoute() {
         return route;
     }
 
@@ -319,16 +322,25 @@ public class RouteCalculator {
      */
     public static String toJSON(List<Location> locations) {
         JSONArray points = new JSONArray();
+
+        for (Location point : locations){
+            trip_unclipped.add(new LatLng(point.getLatitude(),point.getLongitude()));
+        }
+
         locations = clipping(locations);
-        for(Location point : locations) {
+
+        for (Location point : locations){
             trip.add(new LatLng(point.getLatitude(),point.getLongitude()));
+        }
+
+        for(Location point : locations) {
             JSONObject obj = new JSONObject();
             obj.put("time", (new DateTime(point.getTime())).toString()); // convert from UTC time, in milliseconds since January 1, 1970 to ISO 8601
             obj.put("latitude", point.getLatitude());
             obj.put("longitude", point.getLongitude());
             obj.put("accuracy", point.getAccuracy());
-            points.add(obj);}
-
+            points.add(obj);
+        }
         JSONObject route = new JSONObject();
         route.put("points", points);
         route.put("version", JSON_VERSION);
@@ -337,76 +349,58 @@ public class RouteCalculator {
         return route.toString();
     }
 
-    public static double converttoRad(double x) {return x * Math.PI/180;}
+    public static double convertToRad(double x) {return x * Math.PI/180;}
 
-    public static List<Location> clipping(List<Location> locations){
-        double R = 3958.756; // Radius of earth in miles
+
+    public static List<Location> clipping(List<Location> locations) {
         double distance_end = 0;
         double distance_start = 0;
 
         // this is the method to clip the route from start point
-        for (int index = 0; index <= locations.size()- 1; index++){
-            double dLat = converttoRad(locations.get(index +1).getLatitude() -
-                    locations.get(index).getLatitude());
-            double dLong = converttoRad(locations.get(index +1).getLongitude() -
-                    locations.get(index).getLongitude());
-            double curr_distance = Math.pow(Math.sin(dLat/2),2) +
-                    Math.cos(converttoRad(locations.get(index).getLatitude())) *
-                            Math.cos(converttoRad(locations.get(index+1).getLatitude())) *
-                            Math.pow(Math.sin(dLong/2),2);
-            double curr1_distance = 2 * Math.atan2(Math.sqrt(curr_distance),Math.sqrt(1-curr_distance));
-            distance_start += R * curr1_distance;
+        for (int index = 0; index <= locations.size()- 1; index++) {
+            distance_start += ((double) locations.get(index +1).distanceTo(locations.get(index))) * MILES_PER_KILOMETER / 1000;
 
-            if(distance_start >= startpoint){
+            if (distance_start >= start_point){
                 if (index == 0) {
                     locations.remove(0);
-                    break;}
-                else{
+                    break;
+                } else{
                     List<Location> sublocation = new ArrayList<Location>(
                             locations.subList(0,index));
                     locations.removeAll(sublocation);
-                    break;}}
+                    break;
+                }
+            }
         }
 
         // this is the method to clip the route from end point
-        for (int index = locations.size() -1; index >= 0; index--){
-            double dLat = converttoRad(locations.get(index -1).getLatitude() -
-                    locations.get(index).getLatitude());
-            double dLong = converttoRad(locations.get(index -1).getLongitude() -
-                    locations.get(index).getLongitude());
-            double curr_distance = Math.pow(Math.sin(dLat/2),2) +
-                    Math.cos(converttoRad(locations.get(index).getLatitude())) *
-                    Math.cos(converttoRad(locations.get(index - 1).getLatitude())) *
-                    Math.pow(Math.sin(dLong/2),2);
-            double curr1_distance = 2 * Math.atan2(Math.sqrt(curr_distance),Math.sqrt(1-curr_distance));
-            distance_end += R * curr1_distance;
+        for (int index = locations.size() -1; index >= 0; index--) {
+            distance_end += ((double) locations.get(index -1).distanceTo(locations.get(index))) * MILES_PER_KILOMETER / 1000;
 
-            if (distance_end >= endpoint)
-            {
+            if (distance_end >= end_point) {
                 if(index == locations.size() - 1) {
                     locations.remove(locations.size() - 1);
-                    break;}
-                else{
-                List<Location> sublocation = new ArrayList<Location>(
-                        locations.subList(index +1, locations.size()-1));
-                locations.removeAll(sublocation);
-                break;}}
+                    break;
+                } else {
+                    List<Location> sublocation = new ArrayList<Location>(
+                            locations.subList(index +1, locations.size()-1));
+                    locations.removeAll(sublocation);
+                    break;
+                }
+            }
         }
         return locations;
     }
 
-    public double getStartpoint () {return this.startpoint;}
+    public double getStartpoint () {return this.start_point;}
 
-    public void setStartpoint (double StartPoint){ this.startpoint = StartPoint;
-    System.out.println(this.startpoint);}
+    public void setStartpoint (double StartPoint){ this.start_point = StartPoint; }
 
-    public double getEndpoint () {return this.endpoint;}
+    public double getEndpoint () {return this.end_point;}
 
-    public void setEndpoint(double EndPoint) {this.endpoint = EndPoint;
-        System.out.println(this.startpoint);}
+    public void setEndpoint(double EndPoint) {this.end_point = EndPoint; }
 
-    public static ArrayList<LatLng> gettrip()
-    {
-        return trip;
-    }
+    public static ArrayList<LatLng> getTrip() {return trip; }
+
+    public static ArrayList<LatLng> getTrip_unclipped () {return trip_unclipped; }
 }
